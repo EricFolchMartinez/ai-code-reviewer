@@ -1,8 +1,8 @@
-# 🤖 AI Code Reviewer
+# AI Code Reviewer
 
 A powerful, automated code review tool powered by **Python** and **Large Language Models (Llama 3 via Groq)**. It analyzes source code files for **Clean Code** violations, **SOLID** principles adherence, security vulnerabilities, and performance bottlenecks, generating detailed Markdown reports.
 
-## 🚀 Features
+## Features
 
 - **Automated Analysis**: Scans local directories for source code files (`.py`, `.js`, `.java`, etc.).
 - **AI-Powered**: Utilizes the **Llama 3** model (via Groq API) for deep code reasoning.
@@ -10,7 +10,7 @@ A powerful, automated code review tool powered by **Python** and **Large Languag
 - **Clean Architecture**: Built with modularity, scalability, and **SOLID** principles in mind.
 - **CLI Interface**: Easy-to-use Command Line Interface.
 
-## 🏗️ Architecture
+## Architecture
 
 The project follows a modular **Source Layout** structure:
 
@@ -23,7 +23,7 @@ src/
 └── main.py      # Orchestrator
 ```
 
-## 🛠️ Installation
+## Installation
 
 1. **Clone the repository**:
    ```bash
@@ -68,13 +68,13 @@ python -m src.main ./test_code
 The tool will generate a report in the `output/` directory:
 > `output/code_review_report_YYYYMMDD_HHMMSS.md`
 
-## 🛡️ Technologies
+## Technologies
 
 - **Language**: Python 3.10+
 - **AI Model**: Llama 3 (70B Versatile)
 - **API**: Groq Cloud
 - **Libraries**: `groq`, `python-dotenv`
 
-## 📄 License
+## License
 
 This project is open-source and available under the MIT License.
