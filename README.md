@@ -52,7 +52,7 @@ src/
      GROQ_API_KEY=gsk_your_key_here...
      ```
 
-## 💻 Usage
+## Usage
 
 Run the tool by pointing it to a directory containing code:
 
