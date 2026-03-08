@@ -77,4 +77,4 @@ The tool will generate a report in the `output/` directory:
 
 ## License
 
-This project is open-source and available under the MIT License.
+This project is open-source
