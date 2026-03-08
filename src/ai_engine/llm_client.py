@@ -17,10 +17,10 @@ class GroqClient:
         We select 'llama3-70b-8192' because the 70 Billion parameter modelis perfect for code analysis
         """
         # Initialize the Groq client with the API key
-        self.client = Groq(api_key=Config.LLM_API_KEY)
+        self.client = Groq()
         
         # The model used
-        self.model = "llama3-70b-8192"
+        self.model = "llama-3.3-70b-versatile"
         logger.info(f"GroqClient initialized successfully with model: {self.model}")
 
     def analyze_code(self, file_name: str, code_content: str) -> str:

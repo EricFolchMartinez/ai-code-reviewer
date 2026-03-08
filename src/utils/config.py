@@ -11,7 +11,7 @@ class Config:
     """
     
     # Environment variables
-    LLM_API_KEY: str = os.getenv("LLM_API_KEY", "")
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     
     @classmethod
     def validate(cls) -> None:
@@ -20,8 +20,8 @@ class Config:
         Implements the 'Fail Fast': aborts execution if config is missing.
         """
         
-        if not cls.LLM_API_KEY:
+        if not cls.GROQ_API_KEY:
             raise ValueError(
-                "CRITICAL ERROR: LLM_API_KEY environment variable is not set. "
+                "CRITICAL ERROR: GROQ_API_KEY environment variable is not set. "
                 "Please check your .env file."
             )
