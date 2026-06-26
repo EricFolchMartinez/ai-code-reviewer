@@ -1,0 +1,43 @@
+# Production deployment for the AI Code Reviewer web demo.
+#
+# Exposed publicly via Cloudflare Tunnel ("homelab") at reviewer.ericfolch.com.
+# The container port is published ONLY on the loopback interface — never on the
+# LAN — and the tunnel routes localhost:8082 to it.
+#
+# Build & run on the Pi:
+#   docker compose -f docker-compose.prod.yml up -d --build
+
+services:
+  reviewer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ai-code-reviewer:prod
+    container_name: ai-code-reviewer
+    restart: unless-stopped
+
+    # Loopback-only publish. Cloudflare Tunnel reaches it at localhost:8082.
+    ports:
+      - "127.0.0.1:8082:8082"
+
+    # Secrets and tunables come from .env (gitignored). See .env.example.
+    env_file:
+      - .env
+    environment:
+      ENVIRONMENT: production
+      PORT: "8082"
+
+    # No persistent volumes: the web demo writes nothing to disk.
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8082/healthz', timeout=4).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

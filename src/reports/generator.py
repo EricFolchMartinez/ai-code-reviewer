@@ -12,6 +12,36 @@ class ReportGenerator:
     """
 
     @staticmethod
+    def build_markdown_report(reviews: Dict[str, str]) -> str:
+        """
+        Builds the same Markdown report as ``generate_markdown_report`` but
+        returns it as an in-memory string, writing nothing to disk.
+
+        Used by the public web demo, where persisting a file per request would
+        be an unbounded disk-growth / abuse vector. The browser turns this
+        string into a downloadable Blob client-side.
+
+        Args:
+            reviews (Dict[str, str]): Mapping of file name -> LLM review.
+
+        Returns:
+            str: The full report in Markdown, or an empty string if no reviews.
+        """
+        if not reviews:
+            return ""
+
+        parts = [
+            "# AI Code Review Report\n\n",
+            f"**Generated on:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n",
+            "---\n\n",
+        ]
+        for file_path, review_content in reviews.items():
+            parts.append(f"## File: `{file_path}`\n\n")
+            parts.append(f"{review_content}\n\n")
+            parts.append("---\n\n")
+        return "".join(parts)
+
+    @staticmethod
     def generate_markdown_report(reviews: Dict[str, str], output_dir: str = "output") -> str:
         """
         Takes a dictionary of file reviews and compiles them into a single Markdown file.

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Code Reviewer</title>
+  <meta name="description" content="Automated source code review for Clean Code, SOLID, security and performance." />
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/atom-one-dark.min.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body data-api-key-set="{{ 'true' if api_key_set else 'false' }}" data-public-demo="{{ 'true' if public_demo else 'false' }}">
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 8l-4 4 4 4" /><path d="M15 8l4 4-4 4" />
+        </svg>
+      </span>
+      <div class="brand-text">
+        <span class="product">Code&nbsp;Reviewer</span>
+        <span class="tagline">Clean Code, SOLID, security &amp; performance analysis</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      {% if public_demo %}
+      <span class="powered" title="Model used for analysis">Powered by {{ model }} · Groq</span>
+      {% else %}
+      <span id="apiBadge" class="status" title="Groq API key status">
+        <span class="dot"></span><span class="status-text">Checking</span>
+      </span>
+      <button id="apiKeyBtn" class="btn btn-secondary" type="button">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+        <span>Settings</span>
+      </button>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Input panel -->
+    <section class="panel input-panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Source</h2>
+        <div class="tabs">
+          {% if not public_demo %}
+          <button class="tab active" data-tab="upload" type="button">Files</button>
+          <button class="tab" data-tab="paste" type="button">Snippet</button>
+          {% else %}
+          <button class="tab active" data-tab="paste" type="button">Snippet</button>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="panel-body">
+        {% if not public_demo %}
+        <div class="tab-content" id="tab-upload">
+          <div id="dropzone" class="dropzone">
+            <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M12 3v13" /><path d="M7 8l5-5 5 5" />
+            </svg>
+            <p class="dz-title">Drop source files here</p>
+            <p class="dz-sub">or <button id="browseBtn" class="link" type="button">browse</button> to select</p>
+            <input id="fileInput" type="file" multiple hidden />
+          </div>
+          <p class="hint">Supported: {{ extensions | join(', ') }}</p>
+          <ul id="fileList" class="file-list"></ul>
+        </div>
+        {% endif %}
+
+        <div class="tab-content {% if not public_demo %}hidden{% endif %}" id="tab-paste">
+          <label class="field-label" for="snippetName">File name</label>
+          <input id="snippetName" class="text-input" type="text" placeholder="example.py" value="snippet.py" />
+          <label class="field-label" for="codeInput">Source code</label>
+          <textarea id="codeInput" class="code-area" spellcheck="false"
+            placeholder="Paste the source code to review"></textarea>
+          {% if public_demo %}
+          <p class="hint">Public demo · up to {{ max_code_kb }} KB per analysis · rate-limited to protect the shared Groq quota.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="panel-foot">
+        <button id="analyzeBtn" class="btn btn-primary" type="button">Run analysis</button>
+        <button id="clearBtn" class="btn btn-ghost" type="button">Clear</button>
+      </div>
+    </section>
+
+    <!-- Results panel -->
+    <section class="panel results-panel">
+      <div class="panel-head results-head">
+        <h2 class="panel-title">Review</h2>
+        <a id="downloadBtn" class="btn btn-secondary hidden" download>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M7 10l5 5 5-5" /><path d="M12 15V3" />
+          </svg>
+          <span>Download report</span>
+        </a>
+      </div>
+
+      <div id="resultTabs" class="result-tabs"></div>
+
+      <div id="resultBody" class="result-body">
+        <div class="empty-state" id="emptyState">
+          <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M9 13h6" /><path d="M9 17h4" />
+          </svg>
+          <h3>No review yet</h3>
+          <p>Add source files or paste a snippet, then run the analysis.</p>
+        </div>
+        <div id="loading" class="loading hidden">
+          <div class="spinner"></div>
+          <p id="loadingText">Running analysis</p>
+        </div>
+        <article id="markdown" class="markdown hidden"></article>
+      </div>
+    </section>
+  </main>
+
+  {% if not public_demo %}
+  <!-- API key dialog -->
+  <div id="apiModal" class="modal hidden">
+    <div class="modal-card">
+      <h3>Groq API key</h3>
+      <p class="modal-sub">Stored only in this browser and sent with each request. A key can also be configured
+        server-side via the <code>GROQ_API_KEY</code> environment variable.</p>
+      <input id="apiKeyInput" class="text-input" type="password" placeholder="Enter your API key" autocomplete="off" />
+      <div class="modal-actions">
+        <button id="apiCancel" class="btn btn-ghost" type="button">Cancel</button>
+        <button id="apiSave" class="btn btn-primary" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <script src="{{ url_for('static', filename='vendor/marked.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/highlight.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

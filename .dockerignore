@@ -1,0 +1,31 @@
+# Keep the build context small and free of secrets / dev cruft.
+.git
+.gitignore
+.github
+.vscode
+.claude
+
+# Secrets — the key is injected at runtime via env, never baked into the image.
+.env
+*.env
+!.env.example
+
+# Python caches / virtualenvs
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv/
+env/
+
+# Desktop GUI + CLI extras not needed by the web image
+src/gui.py
+app.py
+test_code/
+output/
+
+# Docs and generated reports
+*.md
+!README.md
+code_review_report_*.md

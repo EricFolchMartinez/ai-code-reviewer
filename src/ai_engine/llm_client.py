@@ -1,3 +1,5 @@
+from typing import Optional
+
 from groq import Groq
 
 from src.utils.config import Config
@@ -10,14 +12,23 @@ class GroqClient:
     Client wrapper for the Groq API.
     Handles authentication and communication with the Llama 3 model.
     """
-    
-    def __init__(self):
+
+    def __init__(self, api_key: Optional[str] = None):
         """
-        Initializes the Groq client using the API key from the Config module.
-        We select 'llama3-70b-8192' because the 70 Billion parameter modelis perfect for code analysis
+        Initializes the Groq client.
+
+        Args:
+            api_key (Optional[str]): An explicit Groq API key. When omitted, the
+                Groq SDK falls back to the GROQ_API_KEY environment variable
+                (loaded by the Config module). This lets the web layer pass a
+                key provided at request time without mutating global state.
+
+        We select 'llama-3.3-70b-versatile' because the 70 Billion parameter
+        model is perfect for code analysis.
         """
-        # Initialize the Groq client with the API key
-        self.client = Groq()
+        # Initialize the Groq client. Passing api_key=None lets the SDK read
+        # the GROQ_API_KEY environment variable, preserving previous behaviour.
+        self.client = Groq(api_key=api_key) if api_key else Groq()
         
         # The model used
         self.model = "llama-3.3-70b-versatile"
